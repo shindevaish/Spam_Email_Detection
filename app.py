@@ -113,7 +113,7 @@ input_text = st.text_area("Paste your email or SMS text here...", height=160,
 st.subheader("🧠 Choose Model")
 selected_model_name = st.selectbox(
     "Select classification model:",
-    options=["MultinomialNB", "SVM", "Logistic Regression"],
+    options=["MultinomialNB", "SVM (Best Estimate)", "Logistic Regression"],
     help="Choose the model used for spam detection.",
 )
 
@@ -176,7 +176,7 @@ st.sidebar.markdown(
     """
     **Models Used:**
     - MultinomialNB  
-    - SVM (probability=True)  
+    - SVM  
     - Logistic Regression  
 
     **Features:** TF‑IDF Vectorization  
