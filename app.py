@@ -1,6 +1,17 @@
 import streamlit as st
 import pickle
+import warnings
+from sklearn.exceptions import InconsistentVersionWarning
 
+warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
+
+st.set_page_config(page_title="Spam Email Detection", page_icon="📧", layout="centered")
+
+if "email_text" not in st.session_state:
+    st.session_state.email_text = ""
+
+def clear_text():
+    st.session_state.email_text = ""
 
 st.markdown(
     """
@@ -17,20 +28,27 @@ st.markdown(
         color: #2c3e50 !important;
         font-weight: 600;
     }
+    .stTextArea textarea {
+        min-height: 280px !important;
+        font-size: 20px !important;
+        line-height: 1.6 !important;
+    }
     .stSelectbox > label {
         color: #2c3e50 !important;
         font-weight: 600;
     }
     .stButton > button {
         background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        color: white !important;
         border-radius: 25px;
         padding: 0.8rem 2rem;
         font-weight: 600;
+        border: none;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
     .stButton > button:hover {
         background: linear-gradient(45deg, #5a6fd8 0%, #6a4190 100%);
+        color: white !important;
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
     }
     .result-box {
@@ -55,46 +73,32 @@ st.markdown(
         color: #2c3e50 !important;
         font-size: 1.1em;
         font-weight: 600;
+        margin-top: 10px;
     }
-    
-    /* Sidebar white text fix */
-    .css-1d391kg [data-testid="stSidebar"] {
-        background-color: #1e1e1e;
+    section[data-testid="stSidebar"] {
+        background-color: #1e1e1e !important;
     }
-    .css-1d391kg [data-testid="stSidebar"] h1, 
-    .css-1d391kg [data-testid="stSidebar"] h2, 
-    .css-1d391kg [data-testid="stSidebar"] h3,
-    .css-1d391kg [data-testid="stSidebar"] p,
-    .css-1d391kg [data-testid="stSidebar"] div {
+    section[data-testid="stSidebar"] * {
         color: #ffffff !important;
-    }
-    .css-1d391kg [data-testid="stSidebar"] strong {
-        color: #e0e0e0 !important;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-
 @st.cache_resource
 def load_model_and_vectorizer():
-    """Load all models and TF‑IDF vectorizer from pickle files."""
     models = {
         "MultinomialNB": pickle.load(open("models/naive_bayes_model.pkl", "rb")),
-        "SVM": pickle.load(open("models/svm_model.pkl", "rb")),
+        "SVM (Best Estimate)": pickle.load(open("models/svm_model.pkl", "rb")),
         "Logistic Regression": pickle.load(open("models/logistic_regression_model.pkl", "rb")),
     }
     vectorizer = pickle.load(open("models/tfidf_vectorizer.pkl", "rb"))
     return models, vectorizer
 
-
 models, vectorizer = load_model_and_vectorizer()
 
-
-# ----- UI SETUP -----
-
-st.title("📧 Spam Email Detection using NLP")
+st.title("Spam Email Detection using NLP")
 st.markdown(
     "<div style='font-size:1.15em; color:#2c3e50; margin-bottom:25px; line-height:1.6;'>"
     "Enter the email text and select the model to classify it. "
@@ -103,12 +107,14 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Input section
 st.subheader("Input Email Text")
-input_text = st.text_area("Paste your email or SMS text here...", height=160, 
-                         placeholder="Subject: Free Money Alert!\n\nDear Customer,\nYou've won $1,000,000...")
+input_text = st.text_area(
+    "Paste your email or SMS text here...",
+    key="email_text",
+    height=280,
+    placeholder="Subject: Free Money Alert!\n\nDear Customer,\nYou've won $1,000,000..."
+)
 
-# Model selector
 st.subheader("Choose Model")
 selected_model_name = st.selectbox(
     "Select classification model:",
@@ -116,22 +122,24 @@ selected_model_name = st.selectbox(
     help="Choose the model used for spam detection.",
 )
 
-# Predict button
-if st.button("Predict Spam / Ham", use_container_width=True):
-    if not input_text.strip():
+col1, col2 = st.columns(2)
+
+with col1:
+    predict_clicked = st.button("Predict Spam / Ham", use_container_width=True)
+
+with col2:
+    st.button("Clear Input", use_container_width=True, on_click=clear_text)
+
+if predict_clicked:
+    if not st.session_state.email_text.strip():
         st.warning("Please enter some text before predicting.")
     else:
         try:
-            # Vectorize input
-            X = vectorizer.transform([input_text])
-
-            # Get model
+            X = vectorizer.transform([st.session_state.email_text])
             model = models[selected_model_name]
 
-            # Predict class (0 = ham, 1 = spam)
             pred = model.predict(X)[0]
 
-            # Show result box
             if pred == 1:
                 st.markdown(
                     """
@@ -151,10 +159,9 @@ if st.button("Predict Spam / Ham", use_container_width=True):
                     unsafe_allow_html=True,
                 )
 
-            # Show confidence if available
             if hasattr(model, "predict_proba"):
                 proba = model.predict_proba(X)[0]
-                confidence = max(proba)
+                confidence = float(max(proba))
                 st.progress(confidence, text="Confidence level")
                 st.markdown(
                     f"<div class='confidence-text'>"
@@ -162,14 +169,22 @@ if st.button("Predict Spam / Ham", use_container_width=True):
                     f"(higher value = more certain about prediction)</div>",
                     unsafe_allow_html=True,
                 )
+            elif hasattr(model, "decision_function"):
+                score = model.decision_function(X)
+                st.markdown(
+                    f"<div class='confidence-text'>"
+                    f"SVM Decision Score: <b>{float(score[0]):.3f}</b></div>",
+                    unsafe_allow_html=True,
+                )
             else:
-                st.caption("Model does not support probability (no confidence shown).")
+                st.caption("Confidence not available for this model.")
 
+        except KeyError:
+            st.error("Selected model name does not match the loaded model dictionary.")
         except Exception as e:
             st.error(f"Prediction error: {str(e)}")
-            st.code(str(e))
+            st.caption("This usually means feature mismatch between training and prediction.")
 
-# Optional: model info in sidebar
 st.sidebar.header("Model Information")
 st.sidebar.markdown(
     """
@@ -178,9 +193,9 @@ st.sidebar.markdown(
     - SVM  
     - Logistic Regression  
 
-    **Features:** TF‑IDF Vectorization  
+    **Features:** TF-IDF Vectorization  
     **Labels:** `0 = Ham`, `1 = Spam`
-    """,
+    """
 )
 
 st.sidebar.markdown("---")
