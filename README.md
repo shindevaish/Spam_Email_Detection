@@ -1,19 +1,19 @@
-# 📧 Spam Email Detection using NLP and Machine Learning
+# Spam Email Detection using NLP and Machine Learning
 
-## 📌 Project Overview
+## Project Overview
 
 This project focuses on detecting spam emails using **Natural Language Processing (NLP)** and **Machine Learning techniques**. The system classifies messages as **Spam** or **Ham (Not Spam)** using multiple machine learning models.
 
 ---
 
-## 🚀 Live Demo
+## Live Demo
 
-🔗 **Deployed Application:**  
+**Deployed Application:**  
 [Click Here to Use the App](https://spam-email-detection-61t9.onrender.com/)
 
 ---
 
-## 🎯 Objectives
+## Objectives
 
 - Detect spam emails using NLP techniques  
 - Compare multiple machine learning models  
@@ -22,7 +22,7 @@ This project focuses on detecting spam emails using **Natural Language Processin
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 ### Programming Language
 - Python
@@ -39,7 +39,7 @@ This project focuses on detecting spam emails using **Natural Language Processin
 
 ---
 
-## 🚀 How to Run the Project
+## How to Run the Project
 
 ### Clone Repository
 

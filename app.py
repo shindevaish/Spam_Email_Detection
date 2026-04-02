@@ -2,7 +2,6 @@ import streamlit as st
 import pickle
 
 
-# --- Custom CSS for high contrast + interactive look ---
 st.markdown(
     """
     <style>
@@ -105,12 +104,12 @@ st.markdown(
 )
 
 # Input section
-st.subheader("📝 Input Email Text")
+st.subheader("Input Email Text")
 input_text = st.text_area("Paste your email or SMS text here...", height=160, 
                          placeholder="Subject: Free Money Alert!\n\nDear Customer,\nYou've won $1,000,000...")
 
 # Model selector
-st.subheader("🧠 Choose Model")
+st.subheader("Choose Model")
 selected_model_name = st.selectbox(
     "Select classification model:",
     options=["MultinomialNB", "SVM (Best Estimate)", "Logistic Regression"],
@@ -118,9 +117,9 @@ selected_model_name = st.selectbox(
 )
 
 # Predict button
-if st.button("🔍 Predict Spam / Ham", use_container_width=True):
+if st.button("Predict Spam / Ham", use_container_width=True):
     if not input_text.strip():
-        st.warning("⚠️ Please enter some text before predicting.")
+        st.warning("Please enter some text before predicting.")
     else:
         try:
             # Vectorize input
@@ -137,7 +136,7 @@ if st.button("🔍 Predict Spam / Ham", use_container_width=True):
                 st.markdown(
                     """
                     <div class="result-box spam">
-                        🚨 <b>SPAM DETECTED!</b>
+                        <b>SPAM DETECTED!</b>
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -146,7 +145,7 @@ if st.button("🔍 Predict Spam / Ham", use_container_width=True):
                 st.markdown(
                     """
                     <div class="result-box ham">
-                        ✅ <b>HAM (Not Spam)</b>
+                        <b>HAM (Not Spam)</b>
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -159,7 +158,7 @@ if st.button("🔍 Predict Spam / Ham", use_container_width=True):
                 st.progress(confidence, text="Confidence level")
                 st.markdown(
                     f"<div class='confidence-text'>"
-                    f"📊 Model Confidence: <b>{confidence:.3f}</b> "
+                    f"Model Confidence: <b>{confidence:.3f}</b> "
                     f"(higher value = more certain about prediction)</div>",
                     unsafe_allow_html=True,
                 )
@@ -167,11 +166,11 @@ if st.button("🔍 Predict Spam / Ham", use_container_width=True):
                 st.caption("Model does not support probability (no confidence shown).")
 
         except Exception as e:
-            st.error(f"⚠️ Prediction error: {str(e)}")
+            st.error(f"Prediction error: {str(e)}")
             st.code(str(e))
 
 # Optional: model info in sidebar
-st.sidebar.header("⚙️ Model Information")
+st.sidebar.header("Model Information")
 st.sidebar.markdown(
     """
     **Models Used:**
@@ -186,6 +185,6 @@ st.sidebar.markdown(
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(
-    "<small>🌟 Built with Streamlit | Spam Detection Project</small>",
+    "<small>Built with Streamlit | Spam Detection Project</small>",
     unsafe_allow_html=True,
 )
